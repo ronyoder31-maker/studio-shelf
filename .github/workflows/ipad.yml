@@ -1,0 +1,94 @@
+name: iPad build and tests
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ipad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest stable Xcode
+        run: |
+          X=$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          echo "Using $X"; sudo xcode-select -s "$X"
+          mkdir -p ci; xcodebuild -version | tee ci/xcode.txt
+          xcrun simctl list runtimes | tee -a ci/xcode.txt
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen >/dev/null
+          xcodegen generate
+
+      - name: Pick iPad simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 scripts/pick_sim.py)
+          echo "SIM=$UDID" >> $GITHUB_ENV
+          xcrun simctl list devices available | grep "$UDID" | tee ci/simulator.txt
+
+      - name: Build and run tests (iPad simulator)
+        run: |
+          set -o pipefail
+          xcodebuild test -project StudioShelf.xcodeproj -scheme StudioShelf \
+            -destination "id=$SIM" -derivedDataPath build/DD \
+            -skip-testing:StudioShelfTests/LiveExtractionTests \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee ci/test-full.log | grep -E "error:|warning: .*StudioShelf/|Test Case .*(passed|failed)|MP3CHECK|Executed|TEST (SUCCEEDED|FAILED)|BUILD (SUCCEEDED|FAILED)" > ci/test.log || true
+          tail -5 ci/test-full.log >> ci/test.log
+          grep -q "TEST SUCCEEDED" ci/test-full.log && echo PASS > ci/test-status.txt || echo FAIL > ci/test-status.txt
+
+      - name: Live YouTube extraction + MP3 (on-device code, network dependent)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          TEST_RUNNER_LIVE_YOUTUBE=1 xcodebuild test -project StudioShelf.xcodeproj -scheme StudioShelf \
+            -destination "id=$SIM" -derivedDataPath build/DD \
+            -only-testing:StudioShelfTests/LiveExtractionTests CODE_SIGNING_ALLOWED=NO 2>&1 \
+            | tee ci/live-full.log | grep -E "LIVE|error|Test Case|failed|Executed" > ci/live.log || true
+
+      - name: Build for a real iPad (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build -project StudioShelf.xcodeproj -scheme StudioShelf -destination "generic/platform=iOS" \
+            -derivedDataPath build/DDdevice CODE_SIGNING_ALLOWED=NO 2>&1 | tee ci/device-full.log | grep -E "error:|BUILD (SUCCEEDED|FAILED)" > ci/device.log || true
+
+      - name: Screenshots (simulator, demo library)
+        continue-on-error: true
+        run: bash scripts/screenshots.sh
+
+      - name: Publish results to ci-results branch
+        if: always()
+        run: |
+          cp -R ci /tmp/ci-out
+          tail -c 200000 /tmp/ci-out/test-full.log > /tmp/ci-out/test-tail.log 2>/dev/null || true
+          rm -f /tmp/ci-out/*-full.log
+          echo "${GITHUB_SHA}" > /tmp/ci-out/commit.txt
+          cd /tmp && rm -rf res && mkdir res && cd res && git init -q && git checkout -q -b ci-results
+          cp -R /tmp/ci-out/. .
+          git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "CI results ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" ci-results
+
+      - name: Commit generated Xcode project
+        if: always()
+        run: |
+          git add -f StudioShelf.xcodeproj StudioShelf/Resources/Info.plist || true
+          if ! git diff --cached --quiet; then
+            git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -m "Update generated Xcode project [skip ci]"
+            git push || true
+          fi
+
+      - name: Fail if tests failed
+        run: |
+          grep -q PASS ci/test-status.txt
+          grep -q "BUILD SUCCEEDED" ci/device.log
