@@ -1,0 +1,37 @@
+Test Case '-[StudioShelfTests.LibraryTests testCorruptMetadataIsNotOverwritten]' passed (0.017 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testListingHidesMetadataFolder]' passed (0.016 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testMetadataFollowsRenameAndMove]' passed (0.029 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testNewerMetadataVersionRefused]' passed (0.012 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testPublishAndImportAvoidCollisions]' passed (0.026 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testRenameNeverOverwrites]' passed (0.006 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testRestoreRecreatesMissingFolder]' passed (0.023 seconds).
+Test Case '-[StudioShelfTests.LibraryTests testTrashRestoreDoesNotReplace]' passed (0.016 seconds).
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.146 (0.176) seconds
+<791> Test Case '-[StudioShelfTests.MP3EncoderTests testCancellationRemovesPartialOutput]' passed (19.245 seconds).
+Test Case '-[StudioShelfTests.MP3EncoderTests testEmptyAndCorruptSourcesFailCleanly]' passed (0.015 seconds).
+<0> MP3CHECK hi.mp3: MPEG-1 Layer 3, 48000 Hz, 2 ch, 256 kbps, 2.04 s, frames 85, title Hi
+Test Case '-[StudioShelfTests.MP3EncoderTests testHighSampleRateIsResampled]' passed (0.563 seconds).
+<0> MP3CHECK mono.mp3: MPEG-1 Layer 3, 48000 Hz, 1 ch, 192 kbps, 4.03 s, frames 168, title Mono
+Test Case '-[StudioShelfTests.MP3EncoderTests testMonoAAC48kTo192]' passed (0.555 seconds).
+Test Case '-[StudioShelfTests.MP3EncoderTests testRenamedFileIsNotAcceptedAsMP3]' passed (0.025 seconds).
+<0> MP3CHECK stereo.mp3: MPEG-1 Layer 3, 44100 Hz, 2 ch, 320 kbps, 5.04 s, frames 193, title Grüße aus Kaiserslautern 🎵 — テスト
+Test Case '-[StudioShelfTests.MP3EncoderTests testStereoAACto320]' passed (1.685 seconds).
+<0> MP3CHECK pcm.mp3: MPEG-2 Layer 3, 22050 Hz, 2 ch, 128 kbps, 3.06 s, frames 117, title PCM
+Test Case '-[StudioShelfTests.MP3EncoderTests testStereoPCM22kTo128]' passed (1.350 seconds).
+	 Executed 7 tests, with 0 failures (0 unexpected) in 23.439 (23.444) seconds
+Test Case '-[StudioShelfTests.SafePathTests testRejectsSymlinkEscapeIncludingMissingChild]' passed (0.008 seconds).
+Test Case '-[StudioShelfTests.SafePathTests testRejectsTraversalAndAbsolute]' passed (0.002 seconds).
+Test Case '-[StudioShelfTests.SafePathTests testSanitizeAndUnique]' passed (0.004 seconds).
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.014 (0.060) seconds
+Test Case '-[StudioShelfTests.YouTubeLinkTests testAcceptedForms]' passed (0.001 seconds).
+Test Case '-[StudioShelfTests.YouTubeLinkTests testNormalized]' passed (0.002 seconds).
+Test Case '-[StudioShelfTests.YouTubeLinkTests testRejectedForms]' passed (0.002 seconds).
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.005 (0.132) seconds
+	 Executed 21 tests, with 0 failures (0 unexpected) in 23.603 (23.814) seconds
+	 Executed 21 tests, with 0 failures (0 unexpected) in 23.603 (23.814) seconds
+** TEST SUCCEEDED **
+	/Users/runner/work/studio-shelf/studio-shelf/build/DD/Logs/Test/Test-StudioShelf-2026.10.25_15-13-23-+0000.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started
