@@ -7,7 +7,7 @@ public struct YouTubeLink: Equatable {
     public let videoID: String
     public var normalizedURL: URL { URL(string: "https://www.youtube.com/watch?v=\(videoID)")! }
 
-    public enum Rejection: Equatable {
+    public enum Rejection: Error, Equatable {
         case notALink, notYouTube, playlistOrChannel, noVideoID
         public var message: String {
             switch self {

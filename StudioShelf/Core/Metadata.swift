@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ItemMeta: Codable, Equatable {
+public struct ItemMeta: Codable, Hashable {
     public var tags: [String] = []
     public var favorite: Bool = false
     public var playbackPosition: Double? = nil
