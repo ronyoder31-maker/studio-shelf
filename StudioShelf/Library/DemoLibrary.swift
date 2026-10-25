@@ -25,7 +25,7 @@ enum DemoLibrary {
         }
     }
 
-    static func makePDF(title: String, lines: [String], to url: URL) throws {
+    nonisolated static func makePDF(title: String, lines: [String], to url: URL) throws {
         let r = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         try r.writePDF(to: url) { ctx in
             ctx.beginPage()
@@ -38,7 +38,7 @@ enum DemoLibrary {
     }
 
     /// A gentle two-note stereo tone encoded as AAC, generated on the device.
-    static func makeTone(to url: URL, seconds: Double, sampleRate: Double = 44_100, channels: AVAudioChannelCount = 2) throws {
+    nonisolated static func makeTone(to url: URL, seconds: Double, sampleRate: Double = 44_100, channels: AVAudioChannelCount = 2) throws {
         let settings: [String: Any] = [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: sampleRate, AVNumberOfChannelsKey: channels, AVEncoderBitRateKey: 128_000]
         let file = try AVAudioFile(forWriting: url, settings: settings, commonFormat: .pcmFormatFloat32, interleaved: false)
         let total = AVAudioFrameCount(seconds * sampleRate)
