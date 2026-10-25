@@ -4,6 +4,7 @@ import lame
 
 public enum MP3Error: LocalizedError, Equatable {
     case cannotOpenSource
+    case readFailed(String)
     case emptySource
     case encoderSetup
     case encodeFailed(Int32)
@@ -14,6 +15,7 @@ public enum MP3Error: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .cannotOpenSource: return "The downloaded audio couldn't be opened. It may be damaged or in a format this iPad can't decode."
+        case .readFailed: return "The downloaded audio couldn't be read all the way through. It may be incomplete."
         case .emptySource: return "The downloaded audio is empty."
         case .encoderSetup: return "The MP3 converter couldn't start with this audio's settings."
         case .encodeFailed: return "Converting to MP3 failed partway through."
@@ -90,7 +92,7 @@ public enum MP3Encoder {
             guard let buf = try reader.next() else { break }
             let n = Int32(buf.frameLength)
             if n == 0 { continue }
-            guard let ch = buf.floatChannelData else { throw MP3Error.cannotOpenSource }
+            guard let ch = buf.floatChannelData else { throw MP3Error.readFailed("no float channel data") }
             let left = ch[0]
             let right = channels == 2 ? ch[1] : ch[0]
             let needed = Int(Double(n) * 1.25) + 7200
@@ -135,8 +137,8 @@ final class PCMReader {
 
     func next() throws -> AVAudioPCMBuffer? {
         guard let converter else {
-            if sourceDone { return nil }
-            do { try file.read(into: inBuffer, frameCount: MP3Encoder.chunkFrames) } catch { throw MP3Error.cannotOpenSource }
+            if sourceDone || file.framePosition >= file.length { sourceDone = true; return nil }
+            do { try file.read(into: inBuffer, frameCount: MP3Encoder.chunkFrames) } catch { throw MP3Error.readFailed("\(error)") }
             if inBuffer.frameLength == 0 { sourceDone = true; return nil }
             return inBuffer
         }
@@ -145,7 +147,7 @@ final class PCMReader {
         guard let out = AVAudioPCMBuffer(pcmFormat: outFormat, frameCapacity: cap) else { throw MP3Error.encoderSetup }
         var err: NSError?
         let status = converter.convert(to: out, error: &err) { [self] _, statusPtr in
-            if sourceDone { statusPtr.pointee = .endOfStream; return nil }
+            if sourceDone || file.framePosition >= file.length { sourceDone = true; statusPtr.pointee = .endOfStream; return nil }
             do { try file.read(into: inBuffer, frameCount: MP3Encoder.chunkFrames) } catch {
                 readError = error; sourceDone = true; statusPtr.pointee = .endOfStream; return nil
             }
@@ -153,7 +155,8 @@ final class PCMReader {
             statusPtr.pointee = .haveData
             return inBuffer
         }
-        if readError != nil || status == .error { throw MP3Error.cannotOpenSource }
+        if let readError { throw MP3Error.readFailed("\(readError)") }
+        if status == .error { throw MP3Error.readFailed("converter: \(err.map { "\($0)" } ?? "unknown")") }
         if out.frameLength == 0 && (status == .endOfStream || sourceDone) { return nil }
         return out
     }

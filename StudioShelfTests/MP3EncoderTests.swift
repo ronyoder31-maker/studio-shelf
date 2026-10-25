@@ -113,7 +113,16 @@ final class LiveExtractionTests: XCTestCase {
             throw XCTSkip("Live YouTube test runs only when requested.")
         }
         let id = "jNQXAC9IVRw" // "Me at the zoo", the first YouTube video (19 s), widely used as a public test sample
-        let found = try await YouTubeAudioSource.find(videoID: id)
+        // Diagnostic: does YouTube treat this network as a bot? (Datacenter addresses often get a sign-in wall.)
+        if let (d, r) = try? await URLSession.shared.data(from: URL(string: "https://www.youtube.com/watch?v=\(id)")!) {
+            let html = String(decoding: d, as: UTF8.self)
+            print("LIVE watch page status=\((r as? HTTPURLResponse)?.statusCode ?? 0) botWall=\(html.contains("not a bot")) loginRequired=\(html.contains("LOGIN_REQUIRED")) playable=\(html.contains("\"status\":\"OK\""))")
+            if let range = html.range(of: "\"playabilityStatus\":{") {
+                print("LIVE playability: " + html[range.lowerBound...].prefix(300))
+            }
+        }
+        let found: YouTubeAudioSource.Found
+        do { found = try await YouTubeAudioSource.find(videoID: id) } catch { print("LIVE extraction error: \(error)"); throw error }
         print("LIVE found title=\(found.title) bitrate=\(found.bitrate ?? 0)")
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("live-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
