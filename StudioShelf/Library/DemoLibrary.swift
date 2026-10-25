@@ -18,7 +18,8 @@ enum DemoLibrary {
             try "Title: Snow Globe Multiplication (sample)\nGrade: 3\nStatus: Draft\n".write(to: SafePaths.uniqueURL(in: pr, name: "Listing.txt"), atomically: true, encoding: .utf8)
             let media = try fs.ensureFolder("Media")
             try makeTone(to: SafePaths.uniqueURL(in: media, name: "Demo Tone (stereo).m4a"), seconds: 8)
-            FileManager.default.createFile(atPath: marker.path, contents: Data())
+            try FileManager.default.createDirectory(at: fs.store.folder, withIntermediateDirectories: true)
+            try Data().write(to: marker)
             store.refresh()
         } catch {
             store.errorMessage = "Couldn't add the demo files."
