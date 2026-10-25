@@ -1,0 +1,22 @@
+{
+  "originHash" : "c8310b1228dfad63909de799acd8bd1f660f5bea161de7300358cf1cf0de14e7",
+  "pins" : [
+    {
+      "identity" : "swift-lame",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Phisto/swift-lame",
+      "state" : {
+        "revision" : "727f4ad56195e062560e71468eeb6bd244b9167d"
+      }
+    },
+    {
+      "identity" : "youtubekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexeichhorn/YouTubeKit",
+      "state" : {
+        "revision" : "89854c93207ad0d2b3d78d6f1aea24595ca66552"
+      }
+    }
+  ],
+  "version" : 3
+}
