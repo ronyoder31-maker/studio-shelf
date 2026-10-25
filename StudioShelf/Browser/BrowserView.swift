@@ -62,7 +62,7 @@ struct BrowserView: View {
                 .submitLabel(.go)
                 .onSubmit { browser.go(editing); addressFocused = false }
             Button {
-                browser.isLoading ? browser.webView.stopLoading() : browser.webView.reload()
+                if browser.isLoading { browser.webView.stopLoading() } else { browser.webView.reload() }
             } label: { Image(systemName: browser.isLoading ? "xmark" : "arrow.clockwise") }
                 .accessibilityLabel(browser.isLoading ? "Stop" : "Reload")
             if browser.currentYouTubeLink != nil {

@@ -164,7 +164,6 @@ struct PDFDetailView: View {
             .onAppear {
                 pdfView.autoScales = true
                 pdfView.displayMode = .singlePageContinuous
-                pdfView.usePageViewController(false)
                 if pdfView.document == nil {
                     if let doc = PDFDocument(url: url) {
                         if doc.isLocked { message = "This PDF is password-protected and can't be opened here." }
